@@ -1,0 +1,68 @@
+{
+  "total_exercises": 2909,
+  "columns": [
+    "exercise_id",
+    "name",
+    "description",
+    "type",
+    "body_part",
+    "equipment",
+    "level",
+    "rating"
+  ],
+  "types": {
+    "Strength": 2536,
+    "Stretching": 147,
+    "Plyometrics": 97,
+    "Powerlifting": 37,
+    "Cardio": 35,
+    "Olympic Weightlifting": 35,
+    "Strongman": 22
+  },
+  "body_parts": {
+    "Abdominals": 660,
+    "Quadriceps": 645,
+    "Shoulders": 338,
+    "Chest": 260,
+    "Biceps": 168,
+    "Triceps": 151,
+    "Lats": 124,
+    "Hamstrings": 121,
+    "Middle Back": 116,
+    "Lower Back": 97,
+    "Glutes": 81,
+    "Calves": 47,
+    "Forearms": 31,
+    "Traps": 24,
+    "Abductors": 21,
+    "Adductors": 17,
+    "Neck": 8
+  },
+  "equipment": {
+    "Body Only": 1078,
+    "Dumbbell": 513,
+    "Barbell": 281,
+    "Other": 254,
+    "Cable": 223,
+    "Machine": 175,
+    "Kettlebells": 149,
+    "Bands": 98,
+    "Medicine Ball": 38,
+    "Exercise Ball": 35,
+    "": 32,
+    "E-Z Curl Bar": 22,
+    "Foam Roll": 11
+  },
+  "levels": {
+    "Intermediate": 2437,
+    "Beginner": 459,
+    "Expert": 13
+  },
+  "notes": [
+    "Dataset preparado como catálogo cerrado de ejercicios.",
+    "La IA debe seleccionar ejercicios existentes por exercise_id o name.",
+    "El campo description puede estar vacío en algunos ejercicios.",
+    "El campo rating se ha normalizado a 0.0 cuando estaba vacío.",
+    "No se generan archivos agrupados porque el filtrado se puede hacer desde el catálogo principal."
+  ]
+}
