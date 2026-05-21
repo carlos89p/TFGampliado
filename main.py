@@ -53,7 +53,7 @@ OUTPUT_DIR = BASE_DIR / "rutinas_generadas"
 OLLAMA_URL = "http://localhost:11434/api/chat"
 DEFAULT_MODEL = "qwen2.5:14b"
 
-MAX_EXERCISES_FOR_PROMPT = 260
+DEFAULT_MAX_EXERCISES_FOR_PROMPT = 120
 MIN_EXERCISES_PER_DAY = 5
 MAX_EXERCISES_PER_DAY = 8
 
@@ -64,6 +64,19 @@ MAIN_BODY_PARTS = [
 
 NOISY_NAME_PATTERNS = [
     "partner", "fyr", "metaburn", "tyler", "holman", "30 ", "360 ",
+]
+
+BEGINNER_UNSUITABLE_PATTERNS = [
+    "pull-up", "pullup", "pullups", "dip", "behind the neck", "muscle-up",
+    "clean", "snatch", "jerk", "pistol", "sissy", "plyo", "jump",
+    "reverse-grip incline dumbbell bench press", "man-maker", "floor rope climb",
+]
+
+BEGINNER_PREFERRED_NAME_PATTERNS = [
+    "machine", "seated", "chest press", "lat pull", "pulldown", "leg press",
+    "leg curl", "leg extension", "goblet squat", "glute bridge", "cable row",
+    "push-up", "hands-elevated", "dumbbell row", "preacher", "cable curl",
+    "triceps pushdown", "rope", "crunch", "dead bug", "plank",
 ]
 
 
@@ -290,6 +303,14 @@ def score_exercise(ex: dict[str, Any], user_data: dict[str, Any]) -> float:
     if any(name.startswith(pattern) or pattern in name for pattern in NOISY_NAME_PATTERNS):
         score -= 14
 
+    if level == "principiante":
+        if any(pattern in name for pattern in BEGINNER_UNSUITABLE_PATTERNS):
+            score -= 45
+        if any(pattern in name for pattern in BEGINNER_PREFERRED_NAME_PATTERNS):
+            score += 16
+        if ex["equipment"] in {"Machine", "Cable"}:
+            score += 8
+
     if not ex["description"]:
         score -= 3
 
@@ -297,7 +318,7 @@ def score_exercise(ex: dict[str, Any], user_data: dict[str, Any]) -> float:
     return score
 
 
-def select_exercises_for_prompt(catalog: list[dict[str, Any]], user_data: dict[str, Any]) -> list[dict[str, Any]]:
+def select_exercises_for_prompt(catalog: list[dict[str, Any]], user_data: dict[str, Any], max_exercises: int = DEFAULT_MAX_EXERCISES_FOR_PROMPT) -> list[dict[str, Any]]:
     allowed_levels = allowed_catalog_levels(user_level(user_data))
 
     filtered = [
@@ -311,7 +332,7 @@ def select_exercises_for_prompt(catalog: list[dict[str, Any]], user_data: dict[s
 
     selected: list[dict[str, Any]] = []
     selected_ids: set[str] = set()
-    per_body_part = max(12, MAX_EXERCISES_FOR_PROMPT // len(MAIN_BODY_PARTS))
+    per_body_part = max(8, max_exercises // len(MAIN_BODY_PARTS))
 
     for body_part in MAIN_BODY_PARTS:
         count = 0
@@ -327,13 +348,13 @@ def select_exercises_for_prompt(catalog: list[dict[str, Any]], user_data: dict[s
                 break
 
     for ex in ranked:
-        if len(selected) >= MAX_EXERCISES_FOR_PROMPT:
+        if len(selected) >= max_exercises:
             break
         if ex["exercise_id"] not in selected_ids:
             selected.append(ex)
             selected_ids.add(ex["exercise_id"])
 
-    return selected[:MAX_EXERCISES_FOR_PROMPT]
+    return selected[:max_exercises]
 
 
 def professional_split(days: int) -> list[dict[str, Any]]:
@@ -392,7 +413,7 @@ def professional_split(days: int) -> list[dict[str, Any]]:
 # OLLAMA
 # ============================================================
 
-def call_ollama(messages: list[dict[str, str]], model: str, temperature: float = 0.15) -> str:
+def call_ollama(messages: list[dict[str, str]], model: str, timeout: int = 900, temperature: float = 0.10) -> str:
     payload = {
         "model": model,
         "messages": messages,
@@ -400,8 +421,8 @@ def call_ollama(messages: list[dict[str, str]], model: str, temperature: float =
         "format": "json",
         "options": {
             "temperature": temperature,
-            "num_ctx": 24000,
-            "num_predict": 7000,
+            "num_ctx": 16000,
+            "num_predict": 5000,
         },
     }
 
@@ -413,7 +434,7 @@ def call_ollama(messages: list[dict[str, str]], model: str, temperature: float =
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=360) as response:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
             raw = response.read().decode("utf-8")
             data = json.loads(raw)
             return data["message"]["content"]
@@ -513,6 +534,11 @@ REGLAS OBLIGATORIAS:
 8. Ajusta series, repeticiones, descanso y RIR según objetivo y nivel.
 9. Si el usuario indica lesiones, molestias o restricciones, evita ejercicios incompatibles.
 10. La rutina debe ser profesional, no una lista genérica.
+11. Cada día tiene una lista target_body_parts. En ese día SOLO puedes elegir ejercicios cuyo body_part esté dentro de esa lista.
+12. No metas bíceps en días push/pecho si no aparece en target_body_parts. No metas pecho/tríceps en días pull si no aparecen en target_body_parts.
+13. Para nivel principiante prioriza máquinas, poleas, mancuernas controlables y variantes asistidas. Evita dominadas libres, fondos, olímpicos y ejercicios técnicos complejos.
+14. Escribe todos los textos explicativos en español.
+15. La progresión semanal debe ser concreta y realista, no simplemente subir 5% cada semana.
 
 ESQUEMA EXACTO DE SALIDA:
 {
@@ -564,7 +590,7 @@ ESQUEMA EXACTO DE SALIDA:
     prompt = {
         "user_data": user,
         "closed_exercise_catalog": compact_catalog,
-        "instruction": "Genera la rutina profesional final usando solo ejercicios del catálogo cerrado.",
+        "instruction": "Genera la rutina profesional final usando solo ejercicios del catálogo cerrado. Respeta estrictamente target_body_parts de cada día.",
     }
 
     return [
@@ -660,41 +686,91 @@ def canonicalize_exercise(item: dict[str, Any], indexes: dict[str, dict[str, Any
     return fixed
 
 
+
+def target_parts_for_day(day: dict[str, Any], user_data: dict[str, Any]) -> list[str]:
+    split = professional_split(user_days(user_data))
+    index = max(0, min(len(split) - 1, int(day.get("day", 1)) - 1))
+    return list(split[index].get("target_body_parts", MAIN_BODY_PARTS))
+
+
+def is_exercise_suitable_for_user(exercise: dict[str, Any], user_data: dict[str, Any]) -> bool:
+    level = user_level(user_data)
+    name = normalize_text(exercise.get("name", ""))
+    if level == "principiante" and any(pattern in name for pattern in BEGINNER_UNSUITABLE_PATTERNS):
+        return False
+    if exercise_penalty_from_notes(exercise, user_notes(user_data)) >= 35:
+        return False
+    return True
+
+
+def make_default_exercise(ex: dict[str, Any], note: str = "") -> dict[str, Any]:
+    body_part = ex.get("body_part", "")
+    return {
+        "exercise_id": ex["exercise_id"],
+        "name": ex["name"],
+        "body_part": body_part,
+        "equipment": ex.get("equipment", ""),
+        "sets": 3,
+        "reps": "12-20" if body_part == "Abdominals" else "8-12",
+        "rest_seconds": 90,
+        "rir": "2-3",
+        "tempo": "2-0-2",
+        "notes": note,
+    }
+
+
+def day_body_part_counts(exercises: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = defaultdict(int)
+    for ex in exercises:
+        counts[str(ex.get("body_part", ""))] += 1
+    return counts
+
+
+def next_needed_body_part(target_parts: list[str], current: list[dict[str, Any]]) -> str:
+    counts = day_body_part_counts(current)
+    priority = [p for p in target_parts if p in {"Chest", "Lats", "Middle Back", "Quadriceps", "Hamstrings", "Glutes"}]
+    priority += [p for p in target_parts if p not in priority]
+    return min(priority, key=lambda p: counts.get(p, 0)) if priority else MAIN_BODY_PARTS[0]
+
+
 def fallback_exercises_for_day(
     day: dict[str, Any],
     selected_exercises: list[dict[str, Any]],
     used_ids: set[str],
     user_data: dict[str, Any],
+    current_exercises: list[dict[str, Any]] | None = None,
+    amount: int = MIN_EXERCISES_PER_DAY,
 ) -> list[dict[str, Any]]:
-    split = professional_split(user_days(user_data))
-    target_parts = split[day["day"] - 1].get("target_body_parts", MAIN_BODY_PARTS)
+    target_parts = target_parts_for_day(day, user_data)
+    current = list(current_exercises or [])
+    result: list[dict[str, Any]] = []
 
-    candidates = [
-        ex for ex in selected_exercises
-        if ex["exercise_id"] not in used_ids and ex["body_part"] in target_parts
-    ]
-    if not candidates:
-        candidates = [ex for ex in selected_exercises if ex["exercise_id"] not in used_ids]
-
-    result = []
-    for ex in candidates:
-        if len(result) >= MIN_EXERCISES_PER_DAY:
+    for _ in range(amount):
+        needed_part = next_needed_body_part(target_parts, current + result)
+        candidates = [
+            ex for ex in selected_exercises
+            if ex["exercise_id"] not in used_ids
+            and ex["body_part"] == needed_part
+            and is_exercise_suitable_for_user(ex, user_data)
+        ]
+        if not candidates:
+            candidates = [
+                ex for ex in selected_exercises
+                if ex["exercise_id"] not in used_ids
+                and ex["body_part"] in target_parts
+                and is_exercise_suitable_for_user(ex, user_data)
+            ]
+        if not candidates:
             break
-        used_ids.add(ex["exercise_id"])
-        result.append({
-            "exercise_id": ex["exercise_id"],
-            "name": ex["name"],
-            "body_part": ex["body_part"],
-            "equipment": ex["equipment"],
-            "sets": 3,
-            "reps": "8-12" if ex["body_part"] != "Abdominals" else "12-20",
-            "rest_seconds": 90,
-            "rir": "2-3",
-            "tempo": "2-0-2",
-            "notes": "Ejercicio añadido por validación para completar el volumen mínimo del día.",
-        })
-    return result
 
+        ex = candidates[0]
+        used_ids.add(ex["exercise_id"])
+        result.append(make_default_exercise(
+            ex,
+            "Ejercicio añadido por validación para completar la sesión respetando el enfoque del día."
+        ))
+
+    return result
 
 def validate_and_repair_routine(
     routine: dict[str, Any],
@@ -706,9 +782,17 @@ def validate_and_repair_routine(
     warnings: list[str] = []
     used_ids: set[str] = set()
 
+    split = professional_split(user_days(user_data))
+
     for day in routine["days"]:
         fixed_exercises: list[dict[str, Any]] = []
         seen_day: set[str] = set()
+        body_counts: dict[str, int] = defaultdict(int)
+        target_parts = target_parts_for_day(day, user_data)
+        max_per_body_part = 3 if len(target_parts) <= 2 else 2
+        split_ref = split[int(day["day"]) - 1]
+        day["name"] = split_ref["name"]
+        day["focus"] = ", ".join(target_parts)
 
         for item in day.get("exercises", []):
             if not isinstance(item, dict):
@@ -723,12 +807,32 @@ def validate_and_repair_routine(
                 )
                 continue
 
+            if fixed["body_part"] not in target_parts:
+                warnings.append(
+                    f"Día {day['day']}: se eliminó {fixed['name']} porque pertenece a {fixed['body_part']} "
+                    f"y no encaja con el enfoque del día."
+                )
+                continue
+
+            if not is_exercise_suitable_for_user(indexes["by_id"][fixed["exercise_id"]], user_data):
+                warnings.append(
+                    f"Día {day['day']}: se eliminó {fixed['name']} por no ser adecuado para el perfil/restricciones."
+                )
+                continue
+
             if fixed["exercise_id"] in seen_day:
                 warnings.append(f"Día {day['day']}: se eliminó duplicado del mismo día: {fixed['name']}")
                 continue
 
+            if body_counts.get(fixed["body_part"], 0) >= max_per_body_part:
+                warnings.append(
+                    f"Día {day['day']}: se eliminó {fixed['name']} para evitar exceso de volumen en {fixed['body_part']}."
+                )
+                continue
+
             seen_day.add(fixed["exercise_id"])
             used_ids.add(fixed["exercise_id"])
+            body_counts[fixed["body_part"]] += 1
             fixed_exercises.append(fixed)
 
             if len(fixed_exercises) >= MAX_EXERCISES_PER_DAY:
@@ -736,19 +840,94 @@ def validate_and_repair_routine(
 
         if len(fixed_exercises) < MIN_EXERCISES_PER_DAY:
             missing = MIN_EXERCISES_PER_DAY - len(fixed_exercises)
-            additions = fallback_exercises_for_day(day, selected_exercises, used_ids, user_data)
-            fixed_exercises.extend(additions[:missing])
+            additions = fallback_exercises_for_day(
+                day,
+                selected_exercises,
+                used_ids,
+                user_data,
+                current_exercises=fixed_exercises,
+                amount=missing,
+            )
+            fixed_exercises.extend(additions)
             if additions:
-                warnings.append(f"Día {day['day']}: se añadieron {min(missing, len(additions))} ejercicios válidos del catálogo para completar la sesión.")
+                warnings.append(
+                    f"Día {day['day']}: se añadieron {len(additions)} ejercicios válidos del catálogo "
+                    f"respetando el enfoque muscular del día."
+                )
 
-        day["exercises"] = fixed_exercises
+        day["exercises"] = fixed_exercises[:MAX_EXERCISES_PER_DAY]
+
+    routine["weekly_progression"] = normalize_progression(routine.get("weekly_progression"), user_data)
+    routine["warmup"] = normalize_spanish_list(routine.get("warmup"), default_warmup())
+    routine["cooldown"] = normalize_spanish_list(routine.get("cooldown"), default_cooldown())
+    routine["safety_notes"] = normalize_spanish_list(routine.get("safety_notes"), default_safety_notes())
+    routine["trainer_notes"] = normalize_spanish_list(routine.get("trainer_notes"), default_trainer_notes())
 
     routine["validation"] = {
         "catalog_checked": True,
         "all_final_exercises_exist_in_catalog": True,
+        "target_body_parts_checked": True,
+        "beginner_suitability_checked": True,
         "warnings": warnings,
     }
     return routine, warnings
+
+
+def normalize_spanish_list(value: Any, fallback: list[str]) -> list[str]:
+    if not isinstance(value, list) or not value:
+        return fallback
+    text = " ".join(str(x).lower() for x in value)
+    english_markers = ["always", "warm up", "proper form", "deep breathing", "stretching", "monitor progress"]
+    if any(marker in text for marker in english_markers):
+        return fallback
+    return [str(x).strip() for x in value if str(x).strip()] or fallback
+
+
+def default_warmup() -> list[str]:
+    return [
+        "5-8 minutos de cardio suave.",
+        "Movilidad articular de hombros, cadera, rodillas y tobillos.",
+        "1-2 series de aproximación del primer ejercicio principal con poco peso.",
+    ]
+
+
+def default_cooldown() -> list[str]:
+    return [
+        "3-5 minutos de vuelta a la calma caminando o pedaleando suave.",
+        "Estiramientos suaves de los grupos musculares trabajados, sin dolor.",
+        "Respiración controlada para reducir pulsaciones progresivamente.",
+    ]
+
+
+def default_safety_notes() -> list[str]:
+    return [
+        "Mantén 2-3 repeticiones en reserva en la mayoría de series, especialmente al inicio.",
+        "Prioriza técnica y rango de movimiento controlado antes que subir cargas.",
+        "Detén o adapta cualquier ejercicio que produzca dolor articular o molestia anormal.",
+    ]
+
+
+def default_trainer_notes() -> list[str]:
+    return [
+        "Registra cargas, repeticiones y sensación de esfuerzo para ajustar la progresión.",
+        "Descansa al menos 24-48 horas antes de repetir grupos musculares muy fatigados.",
+        "Para recomposición corporal, combina la rutina con suficiente proteína, sueño y constancia semanal.",
+    ]
+
+
+def normalize_progression(value: Any, user_data: dict[str, Any]) -> list[str]:
+    fallback = [
+        "Semanas 1-2: trabaja con RIR 2-3 y aprende la técnica sin llegar al fallo.",
+        "Cuando completes el rango alto de repeticiones en todas las series con buena técnica, sube la carga entre un 2,5% y un 5% la siguiente sesión.",
+        "Si una semana acumulas mucha fatiga, mantén el peso y reduce 1 serie en los ejercicios accesorios.",
+        "Cada 4-6 semanas realiza una semana más ligera reduciendo el volumen un 25-35%.",
+    ]
+    if not isinstance(value, list) or not value:
+        return fallback
+    text = " ".join(str(x).lower() for x in value)
+    if "increase weight by 5% each week" in text or "subir 5%" in text:
+        return fallback
+    return [str(x).strip() for x in value if str(x).strip()] or fallback
 
 
 # ============================================================
@@ -840,7 +1019,7 @@ def save_outputs(routine: dict[str, Any]) -> tuple[Path, Path]:
 # FLUJO PRINCIPAL
 # ============================================================
 
-def generate_routine(model: str) -> dict[str, Any]:
+def generate_routine(model: str, max_candidates: int = DEFAULT_MAX_EXERCISES_FOR_PROMPT, timeout: int = 900) -> dict[str, Any]:
     print("=== Generador inteligente de rutinas de entrenamiento basado en IA ===")
     print("La IA analiza el perfil, estructura la rutina y selecciona ejercicios del catálogo.\n")
 
@@ -851,12 +1030,12 @@ def generate_routine(model: str) -> dict[str, Any]:
     print(f"Catálogo cargado: {len(catalog)} ejercicios.\n")
 
     print("Preparando catálogo compacto para la IA...")
-    selected_exercises = select_exercises_for_prompt(catalog, user_data)
+    selected_exercises = select_exercises_for_prompt(catalog, user_data, max_exercises=max_candidates)
     print(f"Ejercicios candidatos enviados a la IA: {len(selected_exercises)}.\n")
 
     print(f"Generando rutina con Ollama: {model}")
     messages = build_prompt(user_data, selected_exercises)
-    raw_response = call_ollama(messages, model=model)
+    raw_response = call_ollama(messages, model=model, timeout=timeout)
 
     raw_path = OUTPUT_DIR / "ultima_respuesta_ia_raw.txt"
     raw_path.parent.mkdir(parents=True, exist_ok=True)
@@ -884,6 +1063,8 @@ def generate_routine(model: str) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generador profesional de rutinas de gimnasio con IA.")
     parser.add_argument("--model", default=DEFAULT_MODEL, help=f"Modelo de Ollama a usar. Por defecto: {DEFAULT_MODEL}")
+    parser.add_argument("--max-candidates", type=int, default=DEFAULT_MAX_EXERCISES_FOR_PROMPT, help="Número máximo de ejercicios candidatos enviados a la IA. Por defecto: 120")
+    parser.add_argument("--timeout", type=int, default=900, help="Timeout de Ollama en segundos. Por defecto: 900")
     return parser.parse_args()
 
 
@@ -891,7 +1072,7 @@ def main() -> None:
     args = parse_args()
     started = time.time()
     try:
-        generate_routine(model=args.model)
+        generate_routine(model=args.model, max_candidates=args.max_candidates, timeout=args.timeout)
     except KeyboardInterrupt:
         print("\nEjecución cancelada por el usuario.")
         sys.exit(130)

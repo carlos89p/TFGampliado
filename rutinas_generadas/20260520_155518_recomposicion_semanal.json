@@ -13,7 +13,7 @@
     {
       "day": 1,
       "name": "Torso A",
-      "focus": "Pecho, Látigos, Hombros",
+      "focus": "Chest, Lats, Shoulders, Triceps",
       "exercises": [
         {
           "exercise_id": "leverage_chest_press",
@@ -64,23 +64,23 @@
           "notes": ""
         },
         {
-          "exercise_id": "leverage_decline_chest_press",
-          "name": "Leverage Decline Chest Press",
-          "body_part": "Chest",
+          "exercise_id": "machine_seated_row",
+          "name": "Machine seated row",
+          "body_part": "Lats",
           "equipment": "Machine",
           "sets": 3,
-          "reps": "8-10",
+          "reps": "8-12",
           "rest_seconds": 90,
           "rir": "2-3",
-          "tempo": "2011",
-          "notes": ""
+          "tempo": "2-0-2",
+          "notes": "Ejercicio añadido por validación para completar la sesión respetando el enfoque del día."
         }
       ]
     },
     {
       "day": 2,
       "name": "Pierna A",
-      "focus": "Cuádriceps, Glúteos, Gemelos",
+      "focus": "Quadriceps, Glutes, Hamstrings, Calves",
       "exercises": [
         {
           "exercise_id": "leg_press",
@@ -107,30 +107,6 @@
           "notes": ""
         },
         {
-          "exercise_id": "lying_machine_squat",
-          "name": "Lying Machine Squat",
-          "body_part": "Quadriceps",
-          "equipment": "Machine",
-          "sets": 3,
-          "reps": "8-10",
-          "rest_seconds": 90,
-          "rir": "2-3",
-          "tempo": "2011",
-          "notes": ""
-        },
-        {
-          "exercise_id": "single_leg_press",
-          "name": "Single-Leg Press",
-          "body_part": "Quadriceps",
-          "equipment": "Machine",
-          "sets": 3,
-          "reps": "8-10",
-          "rest_seconds": 90,
-          "rir": "2-3",
-          "tempo": "2011",
-          "notes": ""
-        },
-        {
           "exercise_id": "glute_bridge",
           "name": "Glute bridge",
           "body_part": "Glutes",
@@ -141,13 +117,37 @@
           "rir": "2-3",
           "tempo": "2011",
           "notes": ""
+        },
+        {
+          "exercise_id": "lying_leg_curls",
+          "name": "Lying Leg Curls",
+          "body_part": "Hamstrings",
+          "equipment": "Machine",
+          "sets": 3,
+          "reps": "8-12",
+          "rest_seconds": 90,
+          "rir": "2-3",
+          "tempo": "2-0-2",
+          "notes": "Ejercicio añadido por validación para completar la sesión respetando el enfoque del día."
+        },
+        {
+          "exercise_id": "smith_machine_reverse_calf_raises",
+          "name": "Smith Machine Reverse Calf Raises",
+          "body_part": "Calves",
+          "equipment": "Machine",
+          "sets": 3,
+          "reps": "8-12",
+          "rest_seconds": 90,
+          "rir": "2-3",
+          "tempo": "2-0-2",
+          "notes": "Ejercicio añadido por validación para completar la sesión respetando el enfoque del día."
         }
       ]
     },
     {
       "day": 3,
       "name": "Torso B",
-      "focus": "Espalda, Bíceps, Hombros",
+      "focus": "Middle Back, Lats, Chest, Biceps, Shoulders",
       "exercises": [
         {
           "exercise_id": "machine_seated_row",
@@ -213,33 +213,9 @@
     },
     {
       "day": 4,
-      "name": "Pierna B + Core",
-      "focus": "Glúteos, Cuádriceps, Gemelos, Abdominales",
+      "name": "Pierna B + core",
+      "focus": "Hamstrings, Glutes, Quadriceps, Abdominals",
       "exercises": [
-        {
-          "exercise_id": "smith_machine_bent_over_row",
-          "name": "Smith machine bent-over row",
-          "body_part": "Middle Back",
-          "equipment": "Machine",
-          "sets": 3,
-          "reps": "8-10",
-          "rest_seconds": 90,
-          "rir": "2-3",
-          "tempo": "2011",
-          "notes": ""
-        },
-        {
-          "exercise_id": "seated_calf_raise",
-          "name": "Seated Calf Raise",
-          "body_part": "Calves",
-          "equipment": "Machine",
-          "sets": 3,
-          "reps": "8-10",
-          "rest_seconds": 90,
-          "rir": "2-3",
-          "tempo": "2011",
-          "notes": ""
-        },
         {
           "exercise_id": "cable_rope_pull_through_deadlift",
           "name": "Cable rope pull-through deadlift",
@@ -265,21 +241,47 @@
           "notes": ""
         },
         {
-          "exercise_id": "seated_triceps_press",
-          "name": "Seated triceps press",
-          "body_part": "Triceps",
-          "equipment": "Dumbbell",
+          "exercise_id": "smith_machine_stiff_legged_deadlift",
+          "name": "Smith machine stiff-legged deadlift",
+          "body_part": "Hamstrings",
+          "equipment": "Machine",
           "sets": 3,
-          "reps": "8-10",
+          "reps": "8-12",
           "rest_seconds": 90,
           "rir": "2-3",
-          "tempo": "2011",
-          "notes": ""
+          "tempo": "2-0-2",
+          "notes": "Ejercicio añadido por validación para completar la sesión respetando el enfoque del día."
+        },
+        {
+          "exercise_id": "single_leg_press",
+          "name": "Single-Leg Press",
+          "body_part": "Quadriceps",
+          "equipment": "Machine",
+          "sets": 3,
+          "reps": "8-12",
+          "rest_seconds": 90,
+          "rir": "2-3",
+          "tempo": "2-0-2",
+          "notes": "Ejercicio añadido por validación para completar la sesión respetando el enfoque del día."
+        },
+        {
+          "exercise_id": "standing_leg_curl",
+          "name": "Standing Leg Curl",
+          "body_part": "Hamstrings",
+          "equipment": "Machine",
+          "sets": 3,
+          "reps": "8-12",
+          "rest_seconds": 90,
+          "rir": "2-3",
+          "tempo": "2-0-2",
+          "notes": "Ejercicio añadido por validación para completar la sesión respetando el enfoque del día."
         }
       ]
     }
   ],
-  "weekly_progression": ["Aumentar la carga en leg press y smith machine back squat a medida que se mejoren las habilidades"],
+  "weekly_progression": [
+    "Aumentar la carga en leg press y smith machine back squat a medida que se mejoren las habilidades"
+  ],
   "warmup": [
     "5 minutos de caminata ligera",
     "Estiramientos dinámicos para piernas, espalda y hombros"
@@ -288,6 +290,28 @@
     "5 minutos de caminata lenta",
     "Estiramientos estáticos para todo el cuerpo"
   ],
-  "safety_notes": ["Evitar movimientos bruscos o sobrecargas", "Usar la técnica correcta en todos los ejercicios"],
-  "trainer_notes": ["Monitorear la progresión semanal y ajustar según sea necesario"]
+  "safety_notes": [
+    "Evitar movimientos bruscos o sobrecargas",
+    "Usar la técnica correcta en todos los ejercicios"
+  ],
+  "trainer_notes": [
+    "Monitorear la progresión semanal y ajustar según sea necesario"
+  ],
+  "validation": {
+    "catalog_checked": true,
+    "all_final_exercises_exist_in_catalog": true,
+    "target_body_parts_checked": true,
+    "beginner_suitability_checked": true,
+    "warnings": [
+      "Día 1: se eliminó Leverage Decline Chest Press para evitar exceso de volumen en Chest.",
+      "Día 1: se añadieron 1 ejercicios válidos del catálogo respetando el enfoque muscular del día.",
+      "Día 2: se eliminó Lying Machine Squat para evitar exceso de volumen en Quadriceps.",
+      "Día 2: se eliminó Single-Leg Press para evitar exceso de volumen en Quadriceps.",
+      "Día 2: se añadieron 2 ejercicios válidos del catálogo respetando el enfoque muscular del día.",
+      "Día 4: se eliminó Smith machine bent-over row porque pertenece a Middle Back y no encaja con el enfoque del día.",
+      "Día 4: se eliminó Seated Calf Raise porque pertenece a Calves y no encaja con el enfoque del día.",
+      "Día 4: se eliminó Seated triceps press porque pertenece a Triceps y no encaja con el enfoque del día.",
+      "Día 4: se añadieron 3 ejercicios válidos del catálogo respetando el enfoque muscular del día."
+    ]
+  }
 }
