@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-05-21T16:20:33",
+  "input_csv": "context/megaGymDataset.csv",
+  "original_rows": 2918,
+  "processed_rows": 2909,
+  "removed_empty_titles": 0,
+  "removed_duplicated_titles": 9,
+  "invalid_items_count": 0,
+  "unknown_values": {
+    "type": {},
+    "muscle_group": {},
+    "equipment": {},
+    "level": {}
+  },
+  "counts": {
+    "by_level": {
+      "avanzado": 13,
+      "intermedio": 2437,
+      "principiante": 459
+    },
+    "by_equipment": {
+      "balon_medicinal": 38,
+      "bandas": 98,
+      "barra": 281,
+      "barra_z": 22,
+      "foam_roller": 11,
+      "kettlebell": 149,
+      "mancuernas": 513,
+      "maquina": 175,
+      "otro": 254,
+      "pelota_ejercicio": 35,
+      "peso_corporal": 1078,
+      "polea": 223,
+      "sin_equipamiento": 32
+    },
+    "by_muscle_group": {
+      "abdomen": 660,
+      "abductores": 21,
+      "aductores": 17,
+      "antebrazos": 31,
+      "biceps": 168,
+      "cuadriceps": 645,
+      "cuello": 8,
+      "espalda": 240,
+      "espalda_baja": 97,
+      "gemelos": 47,
+      "gluteos": 81,
+      "hombros": 338,
+      "isquiosurales": 121,
+      "pecho": 260,
+      "trapecio": 24,
+      "triceps": 151
+    },
+    "by_type": {
+      "cardio": 35,
+      "estiramiento": 147,
+      "fuerza": 2536,
+      "halterofilia": 35,
+      "pliometria": 97,
+      "powerlifting": 37,
+      "strongman": 22
+    }
+  },
+  "validation": {
+    "ok": true,
+    "message": "Catálogo procesado correctamente."
+  }
+}
