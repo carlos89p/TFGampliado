@@ -42,8 +42,8 @@ def target_muscle_slots(focus: list[str], exercises_per_day: int) -> list[str]:
     elif "pull" in focus_set:
         priority = [
             "espalda",
+            "espalda",
             "biceps",
-            "trapecios",
             "antebrazos",
             "abdomen",
         ]

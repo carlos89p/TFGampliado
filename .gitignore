@@ -1,3 +1,6 @@
 generated_routines/
 
 venv/
+
+test_routines.py
+test_outputs/
