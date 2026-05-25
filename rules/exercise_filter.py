@@ -37,6 +37,8 @@ BAD_NAME_KEYWORDS = [
     "wax-on",
     "wax-off",
     "pop ",
+    "throw",
+    "explosive",
 ]
 
 BAD_NAME_PREFIXES = [
@@ -48,9 +50,11 @@ BAD_NAME_PREFIXES = [
 
 
 MUSCLE_ALIASES = {
-    "isquiotibiales": ["isquiotibiales", "femorales", "hamstrings"],
-    "femorales": ["isquiotibiales", "femorales", "hamstrings"],
-    "hamstrings": ["isquiotibiales", "femorales", "hamstrings"],
+        "isquiotibiales": ["isquiotibiales", "isquiosurales", "femorales", "hamstrings", "hamstring"],
+    "isquiosurales": ["isquiotibiales", "isquiosurales", "femorales", "hamstrings", "hamstring"],
+    "femorales": ["isquiotibiales", "isquiosurales", "femorales", "hamstrings", "hamstring"],
+    "hamstrings": ["isquiotibiales", "isquiosurales", "femorales", "hamstrings", "hamstring"],
+    "hamstring": ["isquiotibiales", "isquiosurales", "femorales", "hamstrings", "hamstring"],
 }
 
 

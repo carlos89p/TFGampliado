@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-05-21T17:07:35",
+  "created_at": "2026-05-25T11:16:18",
   "generator": "rules_based_v2",
   "user_summary": {
     "name": "Carlos",
@@ -33,8 +33,8 @@
       ],
       "exercises": [
         {
-          "exercise_id": 1050,
-          "name": "Leverage Decline Chest Press",
+          "exercise_id": 1047,
+          "name": "Leverage Chest Press",
           "muscle_group": "pecho",
           "equipment": "maquina",
           "level": "principiante",
@@ -53,18 +53,18 @@
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 2684,
-          "name": "Alternating Cable Shoulder Press",
+          "exercise_id": 2706,
+          "name": "Smith machine shoulder press",
           "muscle_group": "hombros",
-          "equipment": "polea",
-          "level": "principiante",
+          "equipment": "maquina",
+          "level": "intermedio",
           "sets": 3,
           "reps": "8-12",
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 817,
-          "name": "Reverse Cable Curl",
+          "exercise_id": 816,
+          "name": "Standing One-Arm Cable Curl",
           "muscle_group": "biceps",
           "equipment": "polea",
           "level": "principiante",
@@ -112,10 +112,10 @@
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 1226,
-          "name": "Cable rope pull-through deadlift",
+          "exercise_id": 1229,
+          "name": "Glute bridge",
           "muscle_group": "gluteos",
-          "equipment": "polea",
+          "equipment": "peso_corporal",
           "level": "intermedio",
           "sets": 3,
           "reps": "8-12",
@@ -151,10 +151,10 @@
       ],
       "exercises": [
         {
-          "exercise_id": 1055,
-          "name": "Smith machine bench press throw",
+          "exercise_id": 1077,
+          "name": "Standing Cable Chest Press",
           "muscle_group": "pecho",
-          "equipment": "maquina",
+          "equipment": "polea",
           "level": "principiante",
           "sets": 3,
           "reps": "8-12",
@@ -171,18 +171,18 @@
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 2683,
-          "name": "Cable Shoulder Press",
+          "exercise_id": 2710,
+          "name": "Machine Lateral Raise",
           "muscle_group": "hombros",
-          "equipment": "polea",
-          "level": "principiante",
+          "equipment": "maquina",
+          "level": "intermedio",
           "sets": 3,
           "reps": "8-12",
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 816,
-          "name": "Standing One-Arm Cable Curl",
+          "exercise_id": 817,
+          "name": "Reverse Cable Curl",
           "muscle_group": "biceps",
           "equipment": "polea",
           "level": "principiante",
@@ -210,21 +210,21 @@
       ],
       "exercises": [
         {
-          "exercise_id": 2064,
-          "name": "Narrow Stance Hack Squats",
+          "exercise_id": 1937,
+          "name": "Dumbbell split squat",
           "muscle_group": "cuadriceps",
-          "equipment": "maquina",
-          "level": "principiante",
+          "equipment": "mancuernas",
+          "level": "intermedio",
           "sets": 3,
           "reps": "8-12",
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 1349,
-          "name": "Standing Leg Curl",
+          "exercise_id": 1355,
+          "name": "Single-leg lying leg curl",
           "muscle_group": "isquiosurales",
           "equipment": "maquina",
-          "level": "principiante",
+          "level": "intermedio",
           "sets": 3,
           "reps": "8-12",
           "rest": "75-120 segundos"
@@ -240,8 +240,8 @@
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 890,
-          "name": "Smith Machine Reverse Calf Raises",
+          "exercise_id": 889,
+          "name": "Calf Press",
           "muscle_group": "gemelos",
           "equipment": "maquina",
           "level": "principiante",
@@ -250,8 +250,8 @@
           "rest": "75-120 segundos"
         },
         {
-          "exercise_id": 182,
-          "name": "Machine crunch",
+          "exercise_id": 180,
+          "name": "Ab Crunch Machine",
           "muscle_group": "abdomen",
           "equipment": "maquina",
           "level": "intermedio",

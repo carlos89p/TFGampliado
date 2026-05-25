@@ -56,6 +56,15 @@ PRIMARY_KEYWORDS = {
         "stiff-legged deadlift",
         "deadlift",
     ],
+    "isquiosurales": [
+        "leg curl",
+        "hamstring curl",
+        "lying leg curl",
+        "seated leg curl",
+        "romanian deadlift",
+        "stiff-legged deadlift",
+        "deadlift",
+    ],
     "femorales": [
         "leg curl",
         "hamstring curl",
@@ -77,6 +86,7 @@ PRIMARY_KEYWORDS = {
     "gluteos": [
         "hip thrust",
         "glute bridge",
+        "kickback",
         "bridge",
         "pull-through",
     ],
@@ -142,6 +152,8 @@ BAD_WORDS = [
     "wax-off",
     "pop ",
     "30 ",
+    "throw",
+    "explosive",
 ]
 
 
@@ -158,6 +170,8 @@ TOO_DYNAMIC_FOR_BEGINNER = [
     "pike",
     "handstand",
     "man maker",
+    "throw",
+    "explosive",
 ]
 
 
@@ -224,6 +238,8 @@ def score_exercise(exercise: dict, target_muscle: str, user_level: str) -> int:
     if user_level == "principiante":
         if any(word in name for word in TOO_DYNAMIC_FOR_BEGINNER):
             score -= 70
+        if "deadlift" in name:
+            score -= 8
 
     for keyword in PRIMARY_KEYWORDS.get(target_muscle, []):
         if keyword in name:
@@ -305,7 +321,17 @@ def select_exercise(
         if score_exercise(item, target_muscle, user_level) >= best_score - 4
     ]
 
-    selected = random.choice(top[:5]) if top else available[0]
+    # Filtro de calidad mínimo: evita elegir ejercicios problemáticos solo porque
+    # sean los "menos malos" del grupo de candidatos.
+    top = [
+        item for item in top
+        if score_exercise(item, target_muscle, user_level) >= 0
+    ]
+
+    if not top:
+        return None
+
+    selected = random.choice(top[:5])
 
     used_exercise_ids.add(selected["id"])
     used_families_day.add(exercise_family(selected.get("name", "")))

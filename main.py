@@ -3,6 +3,7 @@ from pathlib import Path
 
 from procesamiento_manual import build_manual_user_data
 from rules.routine_builder import build_routine
+from ai.routine_corrector import correct_routine_with_ai
 
 
 BASE_DIR = Path(__file__).parent
@@ -10,7 +11,12 @@ BASE_DIR = Path(__file__).parent
 USER_JSON = BASE_DIR / "manual_input_ai_ready.json"
 CATALOG_JSON = BASE_DIR / "processed_context" / "catalogo_procesado.json"
 OUTPUT_DIR = BASE_DIR / "generated_routines"
-OUTPUT_JSON = OUTPUT_DIR / "rutina_generada.json"
+
+# Salida generada únicamente por reglas.
+OUTPUT_RULES_JSON = OUTPUT_DIR / "rutina_generada.json"
+
+# Salida corregida por IA usando candidatos reales del catálogo.
+OUTPUT_VALIDATED_JSON = OUTPUT_DIR / "rutina_generada_validada.json"
 
 
 def load_json(path: Path):
@@ -96,10 +102,35 @@ def main() -> None:
 
     routine = build_routine(user_data=user_data, catalog=catalog)
 
-    save_json(routine, OUTPUT_JSON)
+    # 1. Guardamos la rutina pura de reglas sin tocar.
+    save_json(routine, OUTPUT_RULES_JSON)
+    print(f"Rutina generada por reglas guardada en: {OUTPUT_RULES_JSON}")
 
-    print(f"Rutina generada correctamente: {OUTPUT_JSON}")
-    print(json.dumps(routine, indent=2, ensure_ascii=False))
+    # 2. Creamos una segunda versión corregida por IA.
+    print("\nValidando y corrigiendo rutina con IA local...\n")
+    correction_result = correct_routine_with_ai(
+        routine=routine,
+        catalog=catalog,
+        enabled=True,
+    )
+
+    corrected_routine = correction_result["corrected_routine"]
+    save_json(corrected_routine, OUTPUT_VALIDATED_JSON)
+
+    print(f"Rutina validada/corregida guardada en: {OUTPUT_VALIDATED_JSON}")
+
+    changes = corrected_routine.get("ai_correction", {}).get("changes_applied", [])
+    if changes:
+        print(f"Cambios aplicados por la capa IA: {len(changes)}")
+        for change in changes:
+            old_name = change.get("old_exercise", {}).get("name")
+            new_name = change.get("new_exercise", {}).get("name")
+            print(f"- {old_name}  ->  {new_name}")
+    else:
+        print("La capa IA no aplicó cambios automáticos.")
+
+    print("\n=== Rutina final validada ===")
+    print(json.dumps(corrected_routine, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
