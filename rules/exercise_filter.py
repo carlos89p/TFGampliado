@@ -81,7 +81,6 @@ def is_level_allowed(exercise_level: str, user_level: str) -> bool:
     user_score = LEVEL_ORDER.get(normalize_text(user_level), 1)
 
     if user_score == 1:
-        # El dataset marca muchos ejercicios básicos como intermedios.
         return exercise_score <= 2
 
     return exercise_score <= user_score

@@ -3,4 +3,5 @@ generated_routines/
 venv/
 
 test_routines.py
+test_routines_multi_model.py
 test_outputs/

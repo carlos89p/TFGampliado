@@ -86,6 +86,7 @@ Criterios:
 4. Debe evitar ejercicios demasiado técnicos o explosivos para principiantes.
 5. Debe detectar huecos como ejercicios no encontrados, grupos musculares omitidos o exceso de volumen.
 6. Debe considerar lesiones o restricciones si aparecen.
+7. Si aparece molestia lumbar/espalda, debe comprobar que la rutina mantenga ejercicio progresivo y priorice core/estabilidad, fortalecimiento controlado, movilidad y cardio suave, evitando cargas axiales pesadas, bisagras pesadas y movimientos explosivos que puedan agravar síntomas.
 
 Devuelve exclusivamente un JSON con este esquema:
 {json.dumps(expected_schema, ensure_ascii=False, indent=2)}

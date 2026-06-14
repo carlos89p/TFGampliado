@@ -44,6 +44,47 @@ def ask_float(question: str, minimum: float | None = None, maximum: float | None
             print("Introduce un número válido.")
 
 
+
+
+def ask_yes_no(question: str, default: str = "n") -> bool:
+    default = default.lower().strip()
+    if default not in {"s", "n"}:
+        default = "n"
+
+    suffix = "[s/n]"
+    if default == "s":
+        suffix = "[s/n] [s]"
+    elif default == "n":
+        suffix = "[s/n] [n]"
+
+    while True:
+        value = input(f"{question} {suffix}: ").strip().lower()
+
+        if not value:
+            value = default
+
+        if value in {"s", "si", "sí", "y", "yes"}:
+            return True
+
+        if value in {"n", "no"}:
+            return False
+
+        print("Respuesta no válida. Escribe 's' o 'n'.")
+
+
+def ask_choice(question: str, valid_options: list[str], default: str) -> str:
+    valid = {option.lower(): option.lower() for option in valid_options}
+    default = default.lower()
+
+    while True:
+        value = input(f"{question} ({', '.join(valid_options)}) [{default}]: ").strip().lower()
+        if not value:
+            return default
+        if value in valid:
+            return valid[value]
+        print(f"Opción no válida. Elige una de: {', '.join(valid_options)}.")
+
+
 def normalize_goal(goal: str) -> str:
     text = goal.strip().lower().replace(" ", "_")
     aliases = {
@@ -89,12 +130,38 @@ def build_manual_user_data() -> dict:
         ask_text("Nivel de experiencia (principiante, intermedio, avanzado): ", default="principiante")
     )
 
+    print("\n=== Lesiones, molestias y limitaciones ===")
+    has_low_back_pain = ask_yes_no(
+        "¿Tienes molestias de espalda o dolor lumbar que debamos tener en cuenta?",
+        default="n"
+    )
+    low_back_pain_severity = "ninguna"
+    low_back_pain_notes = ""
+
+    if has_low_back_pain:
+        low_back_pain_severity = ask_choice(
+            "Nivel aproximado de molestia lumbar",
+            ["leve", "moderada", "alta"],
+            default="leve"
+        )
+        low_back_pain_notes = ask_text(
+            "Describe brevemente qué movimientos te molestan o qué quieres evitar: ",
+            default=""
+        )
+
     print("\n=== Información adicional opcional ===")
     print("Puedes dejarlo vacío si no aplica.")
     free_text = ask_text(
-        "Indica cualquier lesión, molestia, limitación, ejercicio que quieras evitar o comentario importante: ",
+        "Indica cualquier otra lesión, molestia, limitación, ejercicio que quieras evitar o comentario importante: ",
         default=""
     )
+
+    if has_low_back_pain:
+        free_text = " ".join(part for part in [
+            free_text,
+            "molestias de espalda/lumbar",
+            low_back_pain_notes,
+        ] if part).strip()
 
     return {
         "created_at": datetime.now().isoformat(timespec="seconds"),
@@ -125,6 +192,12 @@ def build_manual_user_data() -> dict:
         },
         "goal": {
             "type": goal_type,
+        },
+        "injury_context": {
+            "has_low_back_pain": has_low_back_pain,
+            "low_back_pain_severity": low_back_pain_severity,
+            "low_back_pain_notes": low_back_pain_notes,
+            "areas": ["lumbar", "espalda"] if has_low_back_pain else [],
         },
         "training_context": {
             "days_per_week": days_per_week,

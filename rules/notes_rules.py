@@ -27,13 +27,29 @@ def extract_restrictions(free_text_notes: str) -> dict:
             "box jump",
         ])
 
-    if "espalda" in text or "lumbar" in text:
-        injuries.append("espalda")
+    if any(word in text for word in ["espalda", "lumbar", "lumbalgia", "ciatica", "ciática"]):
+        injuries.extend(["espalda", "lumbar"])
         avoid_keywords.extend([
             "deadlift",
+            "romanian deadlift",
+            "stiff-legged deadlift",
             "good morning",
             "back extension",
             "hyperextension",
+            "bent-over row",
+            "bent over row",
+            "barbell row",
+            "back squat",
+            "front squat",
+            "overhead squat",
+            "power clean",
+            "clean",
+            "snatch",
+            "swing",
+            "jump",
+            "burpee",
+            "twist",
+            "rollout",
         ])
 
     if "muñeca" in text or "muneca" in text:

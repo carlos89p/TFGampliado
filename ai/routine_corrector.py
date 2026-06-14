@@ -9,6 +9,7 @@ from .ollama_client import OllamaError, call_ollama_chat, DEFAULT_MODEL
 from .routine_validator import validate_routine_with_ai
 from rules.exercise_filter import filter_catalog
 from rules.exercise_selector import score_exercise
+from rules.injury_rules import has_low_back_issue, low_back_bonus_for_exercise
 
 
 CORRECTION_SYSTEM_PROMPT = """
@@ -64,7 +65,12 @@ def _extract_json_object(text: str) -> dict:
     return json.loads(match.group(0))
 
 
-def _exercise_has_local_problem(exercise: dict, user_level: str) -> str | None:
+def _exercise_has_local_problem(
+    exercise: dict,
+    user_level: str,
+    user_summary: dict | None = None,
+    restrictions: dict | None = None,
+) -> str | None:
     name = (exercise.get("name") or "").lower()
 
     if exercise.get("exercise_id") is None:
@@ -79,6 +85,10 @@ def _exercise_has_local_problem(exercise: dict, user_level: str) -> str | None:
     if user_level == "principiante" and (exercise.get("level") or "").lower() == "avanzado":
         return "Ejercicio avanzado para principiante."
 
+    if restrictions and has_low_back_issue(user_summary or {}, restrictions):
+        if low_back_bonus_for_exercise(exercise) <= -60:
+            return "Ejercicio poco compatible con molestia lumbar/espalda según la capa de seguridad."
+
     return None
 
 
@@ -90,12 +100,14 @@ def _collect_problematic_positions(routine: dict, ai_validation: dict) -> list[d
 
     Solo se sustituyen ejercicios si hay un problema local determinista grave.
     """
-    user_level = (routine.get("user_summary", {}).get("experience_level") or "principiante").lower()
+    user_summary = routine.get("user_summary", {})
+    restrictions = routine.get("detected_restrictions", {})
+    user_level = (user_summary.get("experience_level") or "principiante").lower()
     problems = []
 
     for day_index, day in enumerate(routine.get("routine", [])):
         for exercise_index, exercise in enumerate(day.get("exercises", [])):
-            reason = _exercise_has_local_problem(exercise, user_level)
+            reason = _exercise_has_local_problem(exercise, user_level, user_summary, restrictions)
 
             if reason:
                 problems.append({
@@ -146,11 +158,12 @@ def _find_replacement_candidates(
     if isinstance(old_id, int):
         used.discard(old_id)
 
+    restrictions = routine.get("detected_restrictions", {})
     candidates = filter_catalog(
         catalog=catalog,
         muscle_group=target_muscle,
         user_level=user_level,
-        avoid_keywords=[],
+        avoid_keywords=restrictions.get("avoid_keywords", []),
         allowed_types=["fuerza"],
     )
 
@@ -161,13 +174,13 @@ def _find_replacement_candidates(
     ]
 
     candidates.sort(
-        key=lambda item: score_exercise(item, target_muscle, user_level),
+        key=lambda item: score_exercise(item, target_muscle, user_level, routine.get("detected_restrictions", {}), routine.get("user_summary", {})),
         reverse=True,
     )
 
     candidates = [
         c for c in candidates
-        if score_exercise(c, target_muscle, user_level) >= 0
+        if score_exercise(c, target_muscle, user_level, routine.get("detected_restrictions", {}), routine.get("user_summary", {})) >= 0
     ]
 
     return candidates[:max_candidates]

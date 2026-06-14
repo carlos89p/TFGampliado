@@ -51,6 +51,7 @@ def normalize_user_profile(user_data: dict) -> dict:
     physique = get_nested(user_data, ["user_profile", "physique_data"], {})
     goal = get_nested(user_data, ["goal"], {})
     training = get_nested(user_data, ["training_context"], {})
+    injury_context = get_nested(user_data, ["injury_context"], {})
 
     weight = physique.get("weight_kg")
     height = physique.get("height_cm")
@@ -71,4 +72,10 @@ def normalize_user_profile(user_data: dict) -> dict:
         "days_per_week": int(training.get("days_per_week", 3)),
         "experience_level": training.get("experience_level", "principiante"),
         "free_text_notes": training.get("free_text_notes", ""),
+        "injuries": {
+            "has_low_back_pain": bool(injury_context.get("has_low_back_pain", False)),
+            "low_back_pain_severity": injury_context.get("low_back_pain_severity", "ninguna"),
+            "low_back_pain_notes": injury_context.get("low_back_pain_notes", ""),
+            "areas": injury_context.get("areas", []),
+        },
     }

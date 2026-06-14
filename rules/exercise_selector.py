@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import random
 
+from .injury_rules import has_low_back_issue, low_back_bonus_for_exercise
+
 
 PRIMARY_KEYWORDS = {
     "pecho": [
@@ -219,7 +221,13 @@ def has_bad_name(name: str) -> bool:
     return any(word in text for word in BAD_WORDS)
 
 
-def score_exercise(exercise: dict, target_muscle: str, user_level: str) -> int:
+def score_exercise(
+    exercise: dict,
+    target_muscle: str,
+    user_level: str,
+    restrictions: dict | None = None,
+    user_profile: dict | None = None,
+) -> int:
     name = (exercise.get("name") or "").lower()
     equipment = (exercise.get("equipment") or "").lower()
     level = (exercise.get("level") or "").lower()
@@ -282,6 +290,9 @@ def score_exercise(exercise: dict, target_muscle: str, user_level: str) -> int:
     if level == "principiante":
         score += 5
 
+    if restrictions and has_low_back_issue(user_profile or {}, restrictions):
+        score += low_back_bonus_for_exercise(exercise)
+
     return score
 
 
@@ -291,6 +302,8 @@ def select_exercise(
     used_exercise_ids: set[int],
     used_families_day: set[str],
     user_level: str = "principiante",
+    restrictions: dict | None = None,
+    user_profile: dict | None = None,
 ) -> dict | None:
     available = []
 
@@ -311,21 +324,19 @@ def select_exercise(
         return None
 
     available.sort(
-        key=lambda item: score_exercise(item, target_muscle, user_level),
+        key=lambda item: score_exercise(item, target_muscle, user_level, restrictions, user_profile),
         reverse=True,
     )
 
-    best_score = score_exercise(available[0], target_muscle, user_level)
+    best_score = score_exercise(available[0], target_muscle, user_level, restrictions, user_profile)
     top = [
         item for item in available
-        if score_exercise(item, target_muscle, user_level) >= best_score - 4
+        if score_exercise(item, target_muscle, user_level, restrictions, user_profile) >= best_score - 4
     ]
 
-    # Filtro de calidad mínimo: evita elegir ejercicios problemáticos solo porque
-    # sean los "menos malos" del grupo de candidatos.
     top = [
         item for item in top
-        if score_exercise(item, target_muscle, user_level) >= 0
+        if score_exercise(item, target_muscle, user_level, restrictions, user_profile) >= 0
     ]
 
     if not top:
