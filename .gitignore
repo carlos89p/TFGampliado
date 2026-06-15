@@ -1,4 +1,6 @@
 generated_routines/
+processed_context/
+context/
 
 venv/
 
